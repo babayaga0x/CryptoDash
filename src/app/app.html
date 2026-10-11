@@ -1,0 +1,25 @@
+<header class="topbar">
+  <a class="brand" routerLink="/">Crypto<span>Dash</span></a>
+
+  <nav aria-label="Main navigation">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</a>
+    <a routerLink="/coins" routerLinkActive="active">Coins</a>
+  </nav>
+
+  <div class="status">
+    @if (api.updatedAt(); as t) {
+      <span class="muted">Updated {{ t | date: 'HH:mm:ss' }}</span>
+    }
+    <button class="btn" type="button" (click)="api.refresh()" [disabled]="api.loading()">
+      {{ api.loading() ? 'Loading…' : 'Refresh' }}
+    </button>
+  </div>
+</header>
+
+<main class="container">
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  Data provided by CoinGecko. The free public API is rate-limited, so avoid refreshing too often.
+</footer>

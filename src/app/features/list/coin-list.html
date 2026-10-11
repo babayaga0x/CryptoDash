@@ -1,0 +1,72 @@
+<div class="page-head">
+  <h1>Coins</h1>
+  <span class="muted">{{ rows().length }} of {{ api.coins().length }}</span>
+</div>
+
+@if (api.error(); as err) {
+  <div class="notice error" role="alert">
+    <span>{{ err }}</span>
+    <button class="btn" type="button" (click)="api.refresh()">Retry</button>
+  </div>
+}
+
+<div class="toolbar">
+  <input
+    type="search"
+    placeholder="Search: bitcoin, eth…"
+    aria-label="Search coins"
+    [value]="query()"
+    (input)="onSearch($event)"
+  />
+  <div class="seg" role="group" aria-label="Filter by 24h change">
+    @for (f of filters; track f.key) {
+      <button type="button" [class.on]="filter() === f.key" (click)="filter.set(f.key)">
+        {{ f.label }}
+      </button>
+    }
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        @for (col of columns; track col.key) {
+          <th [class.r]="col.num" [attr.aria-sort]="ariaSort(col.key)">
+            <button type="button" (click)="sortBy(col.key)">
+              {{ col.label }}
+              @if (sortKey() === col.key) {
+                <span aria-hidden="true">{{ sortDir() === 1 ? '▲' : '▼' }}</span>
+              }
+            </button>
+          </th>
+        }
+        <th class="r hide-sm">7d</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of rows(); track c.id) {
+        <tr class="clickable" (click)="open(c.id)">
+          <td class="muted">{{ c.market_cap_rank }}</td>
+          <td>
+            <a class="coin" [routerLink]="['/coins', c.id]" (click)="$event.stopPropagation()">
+              <img [src]="c.image" alt="" width="24" height="24" loading="lazy" />
+              <span>{{ c.name }} <small class="sym">{{ c.symbol }}</small></span>
+            </a>
+          </td>
+          <td class="r num">{{ c.current_price | usd }}</td>
+          <td class="r"><app-change [value]="c.price_change_percentage_24h" /></td>
+          <td class="r num">{{ c.market_cap | usd: true }}</td>
+          <td class="r num">{{ c.total_volume | usd: true }}</td>
+          <td class="spark hide-sm"><app-chart [values]="c.sparkline_in_7d?.price ?? []" /></td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="empty">
+            {{ api.loading() ? 'Loading…' : 'No coins found' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

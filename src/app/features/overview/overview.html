@@ -1,0 +1,94 @@
+<div class="page-head">
+  <h1>Market overview</h1>
+</div>
+
+@if (api.error(); as err) {
+  <div class="notice error" role="alert">
+    <span>{{ err }}</span>
+    <button class="btn" type="button" (click)="api.refresh()">Retry</button>
+  </div>
+}
+
+@if (api.global(); as g) {
+  <section class="cards">
+    <article class="card">
+      <span class="label">Total market cap</span>
+      <strong class="big">{{ g.marketCap | usd: true }}</strong>
+      <app-change [value]="g.marketCapChange24h" />
+    </article>
+    <article class="card">
+      <span class="label">24h volume</span>
+      <strong class="big">{{ g.volume | usd: true }}</strong>
+    </article>
+    <article class="card">
+      <span class="label">BTC dominance</span>
+      <strong class="big">{{ g.btcDominance | number: '1.1-1' }}%</strong>
+      <span class="muted">ETH {{ g.ethDominance | number: '1.1-1' }}%</span>
+    </article>
+    <article class="card">
+      <span class="label">Active coins</span>
+      <strong class="big">{{ g.activeCoins | number }}</strong>
+    </article>
+  </section>
+} @else if (api.globalLoading()) {
+  <section class="cards" aria-busy="true">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <article class="card skeleton"></article>
+    }
+  </section>
+}
+
+@if (api.top().length) {
+  <section class="panel">
+    <h2>Top 5 by market cap · 7 days</h2>
+    <div class="top-grid">
+      @for (c of api.top(); track c.id) {
+        <a class="top-card" [routerLink]="['/coins', c.id]">
+          <div class="coin">
+            <img [src]="c.image" alt="" width="24" height="24" />
+            <span>{{ c.name }} <small class="sym">{{ c.symbol }}</small></span>
+          </div>
+          <div class="top-price">
+            <strong class="num">{{ c.current_price | usd }}</strong>
+            <app-change [value]="c.price_change_percentage_24h" />
+          </div>
+          <app-chart [values]="c.sparkline_in_7d?.price ?? []" />
+        </a>
+      }
+    </div>
+  </section>
+
+  <div class="split">
+    <section class="panel">
+      <h2>Top gainers · 24h</h2>
+      <ul class="rows">
+        @for (c of api.gainers(); track c.id) {
+          <li>
+            <a [routerLink]="['/coins', c.id]">
+              <img [src]="c.image" alt="" width="24" height="24" />
+              <span class="name">{{ c.name }} <small class="sym">{{ c.symbol }}</small></span>
+              <span class="num">{{ c.current_price | usd }}</span>
+              <app-change [value]="c.price_change_percentage_24h" />
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Top losers · 24h</h2>
+      <ul class="rows">
+        @for (c of api.losers(); track c.id) {
+          <li>
+            <a [routerLink]="['/coins', c.id]">
+              <img [src]="c.image" alt="" width="24" height="24" />
+              <span class="name">{{ c.name }} <small class="sym">{{ c.symbol }}</small></span>
+              <span class="num">{{ c.current_price | usd }}</span>
+              <app-change [value]="c.price_change_percentage_24h" />
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+}

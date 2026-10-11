@@ -1,0 +1,111 @@
+<a class="back" routerLink="/coins">← Back to list</a>
+
+@if (coin(); as c) {
+  <header class="coin-head">
+    <img [src]="c.image" alt="" width="48" height="48" />
+    <div>
+      <h1>{{ c.name }} <small class="sym">{{ c.symbol }}</small></h1>
+      @if (c.market_cap_rank) {
+        <span class="badge">Rank #{{ c.market_cap_rank }}</span>
+      }
+    </div>
+    <div class="price">
+      <strong>{{ c.current_price | usd }}</strong>
+      <app-change [value]="c.price_change_percentage_24h" />
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Price, USD</h2>
+      <div class="seg" role="group" aria-label="Time period">
+        @for (p of periods; track p.days) {
+          <button type="button" [class.on]="days() === p.days" (click)="days.set(p.days)">
+            {{ p.label }}
+          </button>
+        }
+      </div>
+      <app-change [value]="periodChange()" />
+    </div>
+
+    @if (series(); as s) {
+      @if (s.error) {
+        <div class="notice error" role="alert">{{ s.error }}</div>
+      } @else if (s.loading) {
+        <div class="skeleton chart-box" aria-busy="true"></div>
+      } @else if (s.values.length > 1) {
+        <app-chart [values]="s.values" [times]="s.times" [interactive]="true" />
+      } @else {
+        <p class="muted">No chart data available.</p>
+      }
+    }
+  </section>
+
+  <section class="cards stats">
+    <article class="card">
+      <span class="label">Market cap</span>
+      <strong>{{ c.market_cap | usd: true }}</strong>
+    </article>
+    <article class="card">
+      <span class="label">24h volume</span>
+      <strong>{{ c.total_volume | usd: true }}</strong>
+    </article>
+    <article class="card">
+      <span class="label">24h high</span>
+      <strong>{{ c.high_24h | usd }}</strong>
+    </article>
+    <article class="card">
+      <span class="label">24h low</span>
+      <strong>{{ c.low_24h | usd }}</strong>
+    </article>
+    <article class="card">
+      <span class="label">All-time high</span>
+      <strong>{{ c.ath | usd }}</strong>
+      <app-change [value]="c.ath_change_percentage" />
+    </article>
+    <article class="card">
+      <span class="label">Circulating supply</span>
+      <strong>{{ c.circulating_supply ? (c.circulating_supply | number: '1.0-0') : '—' }}</strong>
+      <span class="muted">max {{ c.max_supply ? (c.max_supply | number: '1.0-0') : '∞' }}</span>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>About</h2>
+    @if (aboutState(); as s) {
+      @if (s.error) {
+        <div class="notice error" role="alert">
+          <span>{{ s.error }}</span>
+          <button class="btn" type="button" (click)="loadAbout()">Retry</button>
+        </div>
+      } @else if (s.data) {
+        @if (about()) {
+          <p class="about">{{ about() }}</p>
+        } @else {
+          <p class="muted">No description available.</p>
+        }
+        @if (homepage(); as url) {
+          <a [href]="url" target="_blank" rel="noopener noreferrer">{{ url }}</a>
+        }
+      } @else {
+        <div class="skeleton line" aria-busy="true"></div>
+      }
+    } @else {
+      <p class="muted">The description is loaded on demand to save API requests.</p>
+      <button class="btn" type="button" (click)="loadAbout()">Load description</button>
+    }
+  </section>
+} @else if (api.error(); as err) {
+  <div class="notice error" role="alert">
+    <span>{{ err }}</span>
+    <button class="btn" type="button" (click)="api.refresh()">Retry</button>
+  </div>
+} @else if (api.loading() || !api.coins().length) {
+  <div class="skeleton head-box" aria-busy="true"></div>
+  <div class="skeleton chart-box" aria-busy="true"></div>
+} @else {
+  <div class="notice">
+    <span>"{{ id() }}" is not in the top 100.</span>
+    <a routerLink="/coins">Browse the list</a>
+  </div>
+}

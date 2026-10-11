@@ -1,7 +1,8 @@
+
 # CryptoDash
 
 A crypto market dashboard built with Angular 20: market overview, a searchable and sortable coin table, and per-coin price charts. Data comes from CoinGecko's free public API.
-
+<img width="1906" height="901" alt="SCREENSHOT CRYPTODASH" src="https://github.com/user-attachments/assets/98c0debd-ccd7-414d-bf7d-e3cf0ec42ae3" />
 ## Features
 
 - **Overview**: total market cap, 24h volume, BTC dominance, top 5 coins with 7-day sparklines, top gainers and losers.
